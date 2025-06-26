@@ -3,17 +3,20 @@ from kfp.dsl import InputPath, OutputPath
 import os
 
 @dsl.component(
-    base_image="python:3.10-slim",
+    base_image="registry.redhat.io/ubi9/python-311:latest",
     packages_to_install=[
         "langchain",
         "langchain-community",
         "elasticsearch",
         "transformers",
+        "beautifulsoup4", 
     ],
 )
 def ingest_content(pdf_dir: str, urls: list, output_path: OutputPath()):
     import os, json
-    from langchain.document_loaders import PyPDFLoader, WebBaseLoader
+#    from langchain.document_loaders import PyPDFLoader, WebBaseLoader
+    from langchain.document_loaders import PyPDFLoader
+    from langchain_community.document_loaders import WebBaseLoader
 
     docs = []
     if pdf_dir and os.path.isdir(pdf_dir):

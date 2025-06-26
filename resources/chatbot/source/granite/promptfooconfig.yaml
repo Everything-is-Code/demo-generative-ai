@@ -1,0 +1,52 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+
+# Learn more about building a configuration: https://promptfoo.dev/docs/configuration/guide
+
+description: "My eval"
+
+prompts:
+  - "Write a tweet about {{topic}}"
+  - "Write a concise, funny tweet about {{topic}}"
+
+providers:
+  - id: https # This ID is fine, or you can use a more descriptive one like 'granite-api'
+    config:
+      url: 'https://granite3b-demo-generative-ai.apps.cluster-vgdrd.vgdrd.sandbox3146.opentlc.com'
+      body:
+        # Use {{prompt}} to dynamically inject the prompt text from the 'prompts' section
+        # into the 'prompt' key of your API's request body.
+        prompt: "{{prompt}}"
+        # If your model needs to be specified in the body, it should be like this:
+        # model: 'granite-3.2-8b-instruct-Q4_K_M.gguf'
+        # Add other API-specific parameters here, e.g.:
+        # temperature: 0.7
+        # max_tokens: 500
+      headers:
+        Content-Type: "application/json"
+        # If your API requires an API key, add it here.
+        # It's best practice to use an environment variable:
+        # Authorization: "Bearer {{ env.GRANITE_API_KEY }}"
+
+tests:
+  - vars:
+      topic: bananas
+
+  - vars:
+      topic: avocado toast
+    assert:
+      # For more information on assertions, see https://promptfoo.dev/docs/configuration/expected-outputs
+
+      # Make sure output contains the word "avocado"
+      - type: icontains
+        value: avocado
+
+      # Prefer shorter outputs
+      - type: javascript
+        value: 1 / (output.length + 1)
+
+  - vars:
+      topic: new york city
+    assert:
+      # For more information on model-graded evals, see https://promptfoo.dev/docs/configuration/expected-outputs/model-graded
+      - type: llm-rubric
+        value: ensure that the output is funny

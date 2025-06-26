@@ -1,0 +1,15 @@
+FROM registry.access.redhat.com/ubi9/python-311:1-62.1714671026
+COPY src .
+USER root
+RUN mkdir -p ./mnt/models
+RUN chmod 755 -R ./mnt/models
+# Clear pip cache just in case, though --no-cache-dir helps
+RUN rm -rf /tmp/pip-build-* /root/.cache/pip
+USER 1001
+# Set CMAKE_ARGS for the build
+ENV CMAKE_ARGS="-DLLAMA_F16C=ON -DLLAMA_AVX=ON -DLLAMA_AVX2=ON -DLLAMA_FMA=ON -DLLAMA_SSSE3=ON -DLLAMA_BMI2=ON -DLLAMA_AVX512=OFF -DLLAMA_AVX512_VBMI=OFF -DLLAMA_AVX512_VNNI=OFF -DLLAMA_AVX512_BF16=OFF"
+ENV BUILD_TYPE="Release"
+# CRITICAL CHANGE: Add --no-binary llama-cpp-python
+RUN pip install --no-cache-dir --verbose -r ./requirements.txt --force-reinstall --no-binary llama-cpp-python
+EXPOSE 8001
+ENTRYPOINT [ "sh", "./run.sh" ]
